@@ -74,7 +74,15 @@ func (vcq *validateChirps) validateChirp(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	utils.WriteJSON(w, 200, map[string]bool{"valid": true})
+	filterProfane := map[string]bool{
+		"kerfuffle": true,
+		"sharbert":  true,
+		"fornax":    true,
+	}
+
+	response := utils.FilterWord(filterProfane, vcq.Body, "****")
+
+	utils.WriteJSON(w, 200, map[string]string{"cleaned_body": response})
 }
 
 func main() {
