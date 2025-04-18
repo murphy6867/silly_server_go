@@ -18,12 +18,18 @@ func WriteJSON(w http.ResponseWriter, status int, payload interface{}) {
 }
 
 func FilterWord(profaneWords map[string]bool, sentence string, replaceString string) string {
-	splitSentence := strings.Split(sentence, " ")
+	words := strings.Fields(sentence)
 
-	for i, w := range splitSentence {
+	for i, w := range words {
 		if profaneWords[strings.ToLower(w)] {
-			splitSentence[i] = replaceString
+			words[i] = replaceString
 		}
 	}
-	return strings.Join(splitSentence, " ")
+	return strings.Join(words, " ")
+}
+
+func healthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "Plain/text; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
 }
