@@ -2,8 +2,13 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"sync/atomic"
+
+	"github.com/joho/godotenv"
+	"github.com/murphy6867/server/utils"
 )
 
 type apiConfig struct {
@@ -17,8 +22,18 @@ func (cfg *APIConfig) MetricsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *APIConfig) ResetHandler(w http.ResponseWriter, r *http.Request) {
+	godotenv.Load()
+	platForm := os.Getenv("PLATFORM")
+	if platForm != "dev" {
+		utils.WriteJSON(w, http.StatusForbidden, map[string]string{"error": "Access denied"})
+	}
 	cfg.FileServerHits.Store(0)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+
+	if err := cfg.DB.ResetUserTable(r.Context()); err != nil {
+		log.Printf("Error reset fail: %s\n", err)
+		utils.WriteJSON(w, 500, map[string]string{"error": "Something went wrong"})
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hit counter reset to 0\n"))
 }
