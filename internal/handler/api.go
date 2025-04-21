@@ -11,7 +11,3 @@ type APIConfig struct {
 	DB             *database.Queries
 	Email          string `json:"email"`
 }
-
-type ValidateChirps struct {
-	Body string `json:"body"`
-}

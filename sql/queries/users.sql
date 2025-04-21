@@ -7,4 +7,4 @@ INSERT INTO users (
 RETURNING *;
 
 -- name: ResetUserTable :exec
-TRUNCATE TABLE users;
+TRUNCATE TABLE users CASCADE;

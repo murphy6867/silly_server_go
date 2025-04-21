@@ -9,6 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/murphy6867/server/internal/chirp"
 	"github.com/murphy6867/server/internal/database"
 	"github.com/murphy6867/server/internal/handler"
 	"github.com/murphy6867/server/internal/user"
@@ -33,12 +34,16 @@ func main() {
 	dbQueries := database.New(db)
 
 	apiCfg := handler.APIConfig{DB: dbQueries}
-	validateChirpReq := handler.ValidateChirps{}
 
 	// Compose User module
 	userRepo := user.NewRepository(db)
 	userSvc := user.NewUserService(userRepo)
 	useHdl := user.NewUserHandler(userSvc)
+
+	// Compise Chirp module
+	chirpRepo := chirp.NewRepository(db)
+	chirpSvc := chirp.NewChirpService(chirpRepo)
+	chirpHdl := chirp.NewChirpHandler(chirpSvc)
 
 	mux := http.NewServeMux()
 
@@ -50,9 +55,9 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", handler.HealthCheck)
 	mux.HandleFunc("GET /api/metrics", apiCfg.MetricsHandler)
 	mux.HandleFunc("POST /api/reset", apiCfg.ResetHandler)
-	mux.HandleFunc("POST /api/validate_chirp", validateChirpReq.ValidateChirpHandler)
+
 	mux.HandleFunc("POST /api/users", useHdl.CreateUserHandler)
-	// mux.HandleFunc("POST /api/chirps", useHdl.CreateUserHandler)
+	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
 
 	// Admin API routes
 	mux.HandleFunc("GET /admin/metrics", apiCfg.MetricsHandler)
