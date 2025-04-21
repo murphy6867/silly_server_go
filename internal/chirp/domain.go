@@ -1,10 +1,12 @@
 package chirp
 
 import (
+	"context"
 	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/murphy6867/server/internal/database"
 	"github.com/murphy6867/server/utils"
 )
 
@@ -30,8 +32,8 @@ func NewChirp(userId string, body string) (*Chirp, error) {
 		return nil, errors.New("chirp is too long")
 	}
 
-	if len(body) < 0 {
-		return nil, errors.New("chirp is too long")
+	if len(body) == 0 {
+		return nil, errors.New("chirp is too short")
 	}
 
 	cleaned := utils.FilterWord(profaneWords, body, ReplaceString)
@@ -47,4 +49,19 @@ func NewChirp(userId string, body string) (*Chirp, error) {
 		Body:      cleaned,
 		UserID:    uId,
 	}, nil
+}
+
+func GetChirps(ctx context.Context, data []database.Chirp) (*ResponseChirpsDTO, error) {
+	chirps := make(ResponseChirpsDTO, len(data))
+	for i, ch := range data {
+		chirps[i] = ResponseCreateChirpDTO{
+			ID:        ch.ID.String(),
+			UserID:    ch.UserID.String(),
+			Body:      ch.Body,
+			CreatedAt: ch.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: ch.UpdatedAt.Format(time.RFC3339),
+		}
+	}
+
+	return &chirps, nil
 }

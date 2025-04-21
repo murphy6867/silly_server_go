@@ -38,3 +38,13 @@ func (h *ChirpHandler) CreateChirpHandler(w http.ResponseWriter, r *http.Request
 
 	utils.WriteJSON(w, http.StatusCreated, out)
 }
+
+func (chd *ChirpHandler) GetAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	out, err := chd.svc.GetAllChirpsService(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, out)
+}

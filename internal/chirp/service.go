@@ -33,3 +33,14 @@ func (c *ChirpService) CreateChirpService(ctx context.Context, data CreateChirpD
 
 	return chirp, nil
 }
+
+func (c *ChirpService) GetAllChirpsService(ctx context.Context) (*ResponseChirpsDTO, error) {
+	dbChirps, err := c.repo.GetAllChirps(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	chirps, err := GetChirps(ctx, dbChirps)
+
+	return chirps, nil
+}

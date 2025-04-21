@@ -6,6 +6,10 @@ INSERT INTO chirps (
 )
 RETURNING *;
 
--- name: GetAllChirp :exec
-SELECT * FROM chirps
-ORDER BY created_at DESC;
+-- name: GetAllChirp :many
+SELECT
+  *
+FROM
+  chirps
+ORDER BY
+  created_at ASC;

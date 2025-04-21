@@ -12,3 +12,5 @@ type ResponseCreateChirpDTO struct {
 	Body      string `json:"body"`
 	UserID    string `json:"user_id"`
 }
+
+type ResponseChirpsDTO []ResponseCreateChirpDTO

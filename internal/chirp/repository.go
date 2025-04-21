@@ -9,6 +9,7 @@ import (
 
 type ChirpRepository interface {
 	CreateChirp(ctx context.Context, c *Chirp) error
+	GetAllChirps(ctx context.Context) ([]database.Chirp, error)
 }
 
 type repository struct {
@@ -30,4 +31,12 @@ func (r *repository) CreateChirp(ctx context.Context, c *Chirp) error {
 		UpdatedAt: c.UpdatedAt,
 	})
 	return err
+}
+
+func (r *repository) GetAllChirps(ctx context.Context) ([]database.Chirp, error) {
+	dbChirps, err := r.queries.GetAllChirp(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return dbChirps, nil
 }

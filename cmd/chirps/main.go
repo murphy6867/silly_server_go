@@ -55,11 +55,14 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", handler.HealthCheck)
 	mux.HandleFunc("GET /api/metrics", apiCfg.MetricsHandler)
 	mux.HandleFunc("POST /api/reset", apiCfg.ResetHandler)
-
+	// User
 	mux.HandleFunc("POST /api/users", useHdl.CreateUserHandler)
+	// Chirp
+	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
 
 	// Admin API routes
+	// TODO: Create internal/admin
 	mux.HandleFunc("GET /admin/metrics", apiCfg.MetricsHandler)
 	mux.HandleFunc("POST /admin/reset", apiCfg.ResetHandler)
 
