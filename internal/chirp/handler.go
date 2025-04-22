@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/murphy6867/silly_server_go/utils"
+	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
 type ChirpHandler struct {

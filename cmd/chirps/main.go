@@ -56,11 +56,18 @@ func main() {
 	mux.HandleFunc("GET /api/metrics", apiCfg.MetricsHandler)
 	mux.HandleFunc("POST /api/reset", apiCfg.ResetHandler)
 	// User
+	mux.HandleFunc("POST /api/login", useHdl.SignInHandler)
 	mux.HandleFunc("POST /api/users", useHdl.CreateUserHandler)
 	// Chirp
-	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpHdl.GetChirpsByIdHandler)
 	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
+	mux.HandleFunc("/api/chirps/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			chirpHdl.GetChirpsByIdHandler(w, r)
+		} else {
+			http.NotFound(w, r)
+		}
+	})
 
 	// Admin API routes
 	// TODO: Create internal/admin

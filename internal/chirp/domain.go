@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/murphy6867/silly_server_go/internal/database"
-	"github.com/murphy6867/silly_server_go/utils"
+	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
 type Chirp struct {

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/murphy6867/silly_server_go/utils"
+	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
 type UserHandler struct {
@@ -36,4 +36,25 @@ func (h *UserHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, out)
+}
+
+func (h *UserHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
+	var signInInfo SignInUserDTO
+	if err := json.NewDecoder(r.Body).Decode(&signInInfo); err != nil {
+		http.Error(w, "invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	out, err := h.svc.SignInService(r.Context(), signInInfo)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, ResponseCreateUerDTO{
+		ID:        out.ID.String(),
+		CreatedAt: out.CreatedAt.String(),
+		UpdatedAt: out.UpdatedAt.String(),
+		Email:     out.Email,
+	})
 }

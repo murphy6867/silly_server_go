@@ -8,16 +8,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type User struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Email     string
-}
-
-func NewUser(email string) (*User, error) {
+func NewUser(email string, password string) (*User, error) {
 	if _, err := mail.ParseAddress(email); err != nil {
 		return nil, errors.New("invalid email format")
+	}
+
+	hashedPas, err := hashPassword(password)
+	if err != nil {
+		return nil, err
 	}
 
 	return &User{
@@ -25,5 +23,19 @@ func NewUser(email string) (*User, error) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Email:     email,
+		Password:  hashedPas,
+	}, nil
+}
+
+func NewSignIn(user User, password string) (*ResponseUser, error) {
+	if err := checkPasswordHash(user.Password, password); err != nil {
+		return nil, errors.New("password incorrect")
+	}
+
+	return &ResponseUser{
+		ID:        user.ID,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
