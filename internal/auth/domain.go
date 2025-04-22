@@ -13,7 +13,7 @@ func NewUser(email string, password string) (*User, error) {
 		return nil, errors.New("invalid email format")
 	}
 
-	hashedPas, err := hashPassword(password)
+	hashedPas, err := HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func NewUser(email string, password string) (*User, error) {
 }
 
 func NewSignIn(user User, password string) (*User, error) {
-	if err := checkPasswordHash(user.Password, password); err != nil {
+	if err := CheckPasswordHash(user.Password, password); err != nil {
 		return nil, errors.New("password incorrect")
 	}
 
