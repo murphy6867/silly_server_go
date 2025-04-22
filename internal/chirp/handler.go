@@ -15,14 +15,14 @@ func NewChirpHandler(svc *ChirpService) *ChirpHandler {
 	return &ChirpHandler{svc: svc}
 }
 
-func (h *ChirpHandler) CreateChirpHandler(w http.ResponseWriter, r *http.Request) {
+func (c *ChirpHandler) CreateChirpHandler(w http.ResponseWriter, r *http.Request) {
 	var dataIn CreateChirpDTO
 	if err := json.NewDecoder(r.Body).Decode(&dataIn); err != nil {
 		http.Error(w, "invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	chirp, err := h.svc.CreateChirpService(r.Context(), dataIn)
+	chirp, err := c.svc.CreateChirpService(r.Context(), dataIn)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -39,12 +39,25 @@ func (h *ChirpHandler) CreateChirpHandler(w http.ResponseWriter, r *http.Request
 	utils.WriteJSON(w, http.StatusCreated, out)
 }
 
-func (chd *ChirpHandler) GetAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	out, err := chd.svc.GetAllChirpsService(r.Context())
+func (c *ChirpHandler) GetAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	out, err := c.svc.GetAllChirpsService(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	utils.WriteJSON(w, http.StatusOK, out)
+}
+
+func (c *ChirpHandler) GetChirpsByIdHandler(w http.ResponseWriter, r *http.Request) {
+	chirpId := r.PathValue("chirpID")
+
+	out, err := c.svc.GetChirpsByIdService(r.Context(), chirpId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, out)
+
 }

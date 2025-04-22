@@ -4,12 +4,14 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/google/uuid"
 	"github.com/murphy6867/server/internal/database"
 )
 
 type ChirpRepository interface {
 	CreateChirp(ctx context.Context, c *Chirp) error
 	GetAllChirps(ctx context.Context) ([]database.Chirp, error)
+	GetChirpsById(ctx context.Context, userId uuid.UUID) (database.Chirp, error)
 }
 
 type repository struct {
@@ -37,6 +39,14 @@ func (r *repository) GetAllChirps(ctx context.Context) ([]database.Chirp, error)
 	dbChirps, err := r.queries.GetAllChirp(ctx)
 	if err != nil {
 		return nil, err
+	}
+	return dbChirps, nil
+}
+
+func (r *repository) GetChirpsById(ctx context.Context, chirpId uuid.UUID) (database.Chirp, error) {
+	dbChirps, err := r.queries.GetChirpById(ctx, chirpId)
+	if err != nil {
+		return dbChirps, err
 	}
 	return dbChirps, nil
 }

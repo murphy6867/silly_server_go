@@ -51,7 +51,7 @@ func NewChirp(userId string, body string) (*Chirp, error) {
 	}, nil
 }
 
-func GetChirps(ctx context.Context, data []database.Chirp) (*ResponseChirpsDTO, error) {
+func GetChirps(ctx context.Context, data []database.Chirp) *ResponseChirpsDTO {
 	chirps := make(ResponseChirpsDTO, len(data))
 	for i, ch := range data {
 		chirps[i] = ResponseCreateChirpDTO{
@@ -63,5 +63,15 @@ func GetChirps(ctx context.Context, data []database.Chirp) (*ResponseChirpsDTO, 
 		}
 	}
 
-	return &chirps, nil
+	return &chirps
+}
+
+func GetChirpById(ctx context.Context, data database.Chirp) *ResponseCreateChirpDTO {
+	return &ResponseCreateChirpDTO{
+		ID:        data.ID.String(),
+		CreatedAt: data.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: data.UpdatedAt.Format(time.RFC3339),
+		UserID:    data.UserID.String(),
+		Body:      data.Body,
+	}
 }

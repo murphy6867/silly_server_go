@@ -58,6 +58,7 @@ func main() {
 	// User
 	mux.HandleFunc("POST /api/users", useHdl.CreateUserHandler)
 	// Chirp
+	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpHdl.GetChirpsByIdHandler)
 	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
 
