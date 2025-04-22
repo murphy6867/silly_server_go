@@ -9,10 +9,10 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/murphy6867/silly_server_go/internal/auth"
 	"github.com/murphy6867/silly_server_go/internal/chirp"
 	"github.com/murphy6867/silly_server_go/internal/database"
 	"github.com/murphy6867/silly_server_go/internal/handler"
-	"github.com/murphy6867/silly_server_go/internal/user"
 )
 
 func main() {
@@ -36,9 +36,9 @@ func main() {
 	apiCfg := handler.APIConfig{DB: dbQueries}
 
 	// Compose User module
-	userRepo := user.NewRepository(db)
-	userSvc := user.NewUserService(userRepo)
-	useHdl := user.NewUserHandler(userSvc)
+	authRepo := auth.NewRepository(db)
+	authSvc := auth.NewAuthService(authRepo)
+	authHld := auth.NewAuthHandler(authSvc)
 
 	// Compise Chirp module
 	chirpRepo := chirp.NewRepository(db)
@@ -55,9 +55,9 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", handler.HealthCheck)
 	mux.HandleFunc("GET /api/metrics", apiCfg.MetricsHandler)
 	mux.HandleFunc("POST /api/reset", apiCfg.ResetHandler)
-	// User
-	mux.HandleFunc("POST /api/login", useHdl.SignInHandler)
-	mux.HandleFunc("POST /api/users", useHdl.CreateUserHandler)
+	// Auth
+	mux.HandleFunc("POST /api/signin", authHld.SignInHandler)
+	mux.HandleFunc("POST /api/signup", authHld.SignUpHandler)
 	// Chirp
 	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
