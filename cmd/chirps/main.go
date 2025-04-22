@@ -9,10 +9,10 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/murphy6867/server/internal/chirp"
-	"github.com/murphy6867/server/internal/database"
-	"github.com/murphy6867/server/internal/handler"
-	"github.com/murphy6867/server/internal/user"
+	"github.com/murphy6867/silly_server_go/internal/chirp"
+	"github.com/murphy6867/silly_server_go/internal/database"
+	"github.com/murphy6867/silly_server_go/internal/handler"
+	"github.com/murphy6867/silly_server_go/internal/user"
 )
 
 func main() {

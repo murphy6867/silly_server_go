@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/murphy6867/server/utils"
+	"github.com/murphy6867/silly_server_go/utils"
 )
 
 type UserHandler struct {

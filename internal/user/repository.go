@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/murphy6867/server/internal/database"
+	"github.com/murphy6867/silly_server_go/internal/database"
 )
 
 type UserRepository interface {

@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	"github.com/murphy6867/server/internal/database"
+	"github.com/murphy6867/silly_server_go/internal/database"
 )
 
 type ChirpRepository interface {

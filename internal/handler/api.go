@@ -3,7 +3,7 @@ package handler
 import (
 	"sync/atomic"
 
-	"github.com/murphy6867/server/internal/database"
+	"github.com/murphy6867/silly_server_go/internal/database"
 )
 
 type APIConfig struct {

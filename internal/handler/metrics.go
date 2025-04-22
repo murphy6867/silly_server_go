@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 
 	"github.com/joho/godotenv"
-	"github.com/murphy6867/server/utils"
+	"github.com/murphy6867/silly_server_go/utils"
 )
 
 type apiConfig struct {

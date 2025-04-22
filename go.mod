@@ -1,4 +1,4 @@
-module github.com/murphy6867/server
+module github.com/murphy6867/silly_server_go
 
 go 1.23.3
 
