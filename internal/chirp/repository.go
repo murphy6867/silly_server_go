@@ -5,34 +5,49 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/murphy6867/silly_server_go/internal/auth"
 	"github.com/murphy6867/silly_server_go/internal/database"
 )
 
 type ChirpRepository interface {
-	CreateChirp(ctx context.Context, c *Chirp) error
+	CreateChirp(ctx context.Context, c *Chirp) (*Chirp, error)
 	GetAllChirps(ctx context.Context) ([]database.Chirp, error)
 	GetChirpsById(ctx context.Context, userId uuid.UUID) (database.Chirp, error)
 }
 
 type repository struct {
-	queries *database.Queries
+	queries   *database.Queries
+	secretKey string
 }
 
-func NewRepository(db *sql.DB) ChirpRepository {
+func NewRepository(db *sql.DB, secretKey string) ChirpRepository {
 	return &repository{
-		queries: database.New(db),
+		queries:   database.New(db),
+		secretKey: secretKey,
 	}
 }
 
-func (r *repository) CreateChirp(ctx context.Context, c *Chirp) error {
-	_, err := r.queries.CreateChirp(ctx, database.CreateChirpParams{
+func (r *repository) CreateChirp(ctx context.Context, c *Chirp) (*Chirp, error) {
+	userID, err := auth.ValidateJWT(c.AccessToken, r.secretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := r.queries.CreateChirp(ctx, database.CreateChirpParams{
 		ID:        c.ID,
-		UserID:    c.UserID,
+		UserID:    userID,
 		Body:      c.Body,
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
 	})
-	return err
+
+	return &Chirp{
+		ID:        data.ID,
+		UserID:    userID,
+		Body:      data.Body,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+	}, err
 }
 
 func (r *repository) GetAllChirps(ctx context.Context) ([]database.Chirp, error) {

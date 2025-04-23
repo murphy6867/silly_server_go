@@ -25,6 +25,11 @@ func main() {
 		log.Fatal("DB_URL environment variable is not set")
 	}
 
+	scrKey := os.Getenv("SECRET")
+	if scrKey == "" {
+		log.Fatal("SECRET environment variable is not set")
+	}
+
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -36,12 +41,12 @@ func main() {
 	apiCfg := handler.APIConfig{DB: dbQueries}
 
 	// Compose User module
-	authRepo := auth.NewRepository(db)
+	authRepo := auth.NewRepository(db, scrKey)
 	authSvc := auth.NewAuthService(authRepo)
 	authHld := auth.NewAuthHandler(authSvc)
 
-	// Compise Chirp module
-	chirpRepo := chirp.NewRepository(db)
+	// Compose Chirp module
+	chirpRepo := chirp.NewRepository(db, scrKey)
 	chirpSvc := chirp.NewChirpService(chirpRepo)
 	chirpHdl := chirp.NewChirpHandler(chirpSvc)
 
@@ -57,7 +62,9 @@ func main() {
 	mux.HandleFunc("POST /api/reset", apiCfg.ResetHandler)
 	// Auth
 	mux.HandleFunc("POST /api/signin", authHld.SignInHandler)
+	mux.HandleFunc("POST /api/login", authHld.SignInHandler)
 	mux.HandleFunc("POST /api/signup", authHld.SignUpHandler)
+	mux.HandleFunc("POST /api/users", authHld.SignUpHandler)
 	// Chirp
 	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)

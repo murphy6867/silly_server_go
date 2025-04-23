@@ -16,3 +16,9 @@ FROM
     users
 WHERE
     email = $1;
+
+-- name: SetUserToken :one
+UPDATE users
+SET access_token = $1
+WHERE email = $2
+RETURNING *;

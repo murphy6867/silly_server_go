@@ -24,7 +24,7 @@ func (h *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.svc.SignUpUserService(r.Context(), dataIn)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -51,10 +51,26 @@ func (h *AuthHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, ResponseUerDTO{
-		ID:        out.ID.String(),
-		CreatedAt: out.CreatedAt.String(),
-		UpdatedAt: out.UpdatedAt.String(),
-		Email:     out.Email,
-	})
+	w.Header().Set("Authorization", "Bearer "+out.AccessToken)
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if data, err := json.Marshal(ResponseUerDTO{
+		ID:          out.ID.String(),
+		CreatedAt:   out.CreatedAt.String(),
+		UpdatedAt:   out.UpdatedAt.String(),
+		Email:       out.Email,
+		AccessToken: out.AccessToken,
+	}); err == nil {
+		w.Write(data)
+	} else {
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+	}
+
+	// utils.WriteJSON(w, http.StatusOK, ResponseUerDTO{
+	// 	ID:        out.ID.String(),
+	// 	CreatedAt: out.CreatedAt.String(),
+	// 	UpdatedAt: out.UpdatedAt.String(),
+	// 	Email:     out.Email,
+	// 	// AccessToken: out.AccessToken,
+	// })
 }

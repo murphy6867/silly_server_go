@@ -3,6 +3,7 @@ package chirp
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/google/uuid"
 )
@@ -15,21 +16,18 @@ func NewChirpService(c ChirpRepository) *ChirpService {
 	return &ChirpService{repo: c}
 }
 
-func (svc *ChirpService) CreateChirpService(ctx context.Context, data CreateChirpDTO) (*Chirp, error) {
+func (svc *ChirpService) CreateChirpService(r *http.Request, data CreateChirpDTO) (*Chirp, error) {
 	if data.Body == "" {
 		return nil, errors.New("chirp is required")
 	}
 
-	if data.UserID == "" {
-		return nil, errors.New("user id is required")
-	}
-
-	chirp, err := NewChirp(data.UserID, data.Body)
+	chirp, err := NewChirp(r, data)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := svc.repo.CreateChirp(ctx, chirp); err != nil {
+	chirp, err = svc.repo.CreateChirp(r.Context(), chirp)
+	if err != nil {
 		return nil, err
 	}
 

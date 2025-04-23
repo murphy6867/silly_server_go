@@ -3,20 +3,13 @@ package chirp
 import (
 	"context"
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/murphy6867/silly_server_go/internal/database"
 	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
-
-type Chirp struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Body      string
-	UserID    uuid.UUID
-}
 
 const MaxChirpLength = 140
 const ReplaceString = "****"
@@ -27,27 +20,28 @@ var profaneWords = map[string]bool{
 	"fornax":    true,
 }
 
-func NewChirp(userId string, body string) (*Chirp, error) {
-	if len(body) > MaxChirpLength {
+func NewChirp(r *http.Request, data CreateChirpDTO) (*Chirp, error) {
+	token, err := utils.GetBearerToken(r.Header)
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
+
+	if len(data.Body) > MaxChirpLength {
 		return nil, errors.New("chirp is too long")
 	}
 
-	if len(body) == 0 {
+	if len(data.Body) == 0 {
 		return nil, errors.New("chirp is too short")
 	}
 
-	cleaned := utils.FilterWord(profaneWords, body, ReplaceString)
-	uId, err := uuid.Parse(userId)
-	if err != nil {
-		return nil, errors.New("user id not found")
-	}
+	cleaned := utils.FilterWord(profaneWords, data.Body, ReplaceString)
 
 	return &Chirp{
-		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Body:      cleaned,
-		UserID:    uId,
+		ID:          uuid.New(),
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
+		Body:        cleaned,
+		AccessToken: token,
 	}, nil
 }
 

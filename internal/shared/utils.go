@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strings"
@@ -32,4 +33,14 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "Plain/text; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
+}
+
+func GetBearerToken(headers http.Header) (string, error) {
+	token := headers.Get("Authorization")
+	if token == "" {
+		return "", errors.New("invalid authorization")
+	}
+	splitToken := strings.Split(token, "Bearer ")
+	token = splitToken[1]
+	return token, nil
 }

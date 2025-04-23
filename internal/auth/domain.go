@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewUser(email string, password string) (*User, error) {
+func NewUser(email string, password string) (*SignUpUserInfo, error) {
 	if _, err := mail.ParseAddress(email); err != nil {
 		return nil, errors.New("invalid email format")
 	}
@@ -18,24 +18,28 @@ func NewUser(email string, password string) (*User, error) {
 		return nil, err
 	}
 
-	return &User{
+	return &SignUpUserInfo{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 		Email:     email,
 		Password:  hashedPas,
 	}, nil
 }
 
-func NewSignIn(user User, password string) (*User, error) {
-	if err := CheckPasswordHash(user.Password, password); err != nil {
-		return nil, errors.New("password incorrect")
+func NewSignIn(data SignInDTO) (*SignIn, error) {
+	var expiresIn time.Duration
+	if data.ExpiresInSecond == 0 {
+		expiresIn = time.Hour
+	} else if data.ExpiresInSecond > 3600 {
+		expiresIn = time.Hour
+	} else {
+		expiresIn = time.Duration(data.ExpiresInSecond) * time.Second
 	}
 
-	return &User{
-		ID:        user.ID,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	return &SignIn{
+		Email:           data.Email,
+		Password:        data.Password,
+		ExpiresInSecond: expiresIn,
 	}, nil
 }

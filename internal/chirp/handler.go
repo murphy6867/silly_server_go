@@ -22,9 +22,9 @@ func (c *ChirpHandler) CreateChirpHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	chirp, err := c.svc.CreateChirpService(r.Context(), dataIn)
+	chirp, err := c.svc.CreateChirpService(r, dataIn)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 

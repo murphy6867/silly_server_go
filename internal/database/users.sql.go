@@ -18,7 +18,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, created_at, updated_at, email, hashed_password
+RETURNING id, created_at, updated_at, email, hashed_password, access_token
 `
 
 type CreateUserParams struct {
@@ -44,13 +44,14 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UpdatedAt,
 		&i.Email,
 		&i.HashedPassword,
+		&i.AccessToken,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
 SELECT
-    id, created_at, updated_at, email, hashed_password
+    id, created_at, updated_at, email, hashed_password, access_token
 FROM 
     users
 WHERE
@@ -66,6 +67,7 @@ func (q *Queries) GetUserById(ctx context.Context, email string) (User, error) {
 		&i.UpdatedAt,
 		&i.Email,
 		&i.HashedPassword,
+		&i.AccessToken,
 	)
 	return i, err
 }
@@ -77,4 +79,30 @@ TRUNCATE TABLE users CASCADE
 func (q *Queries) ResetUserTable(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, resetUserTable)
 	return err
+}
+
+const setUserToken = `-- name: SetUserToken :one
+UPDATE users
+SET access_token = $1
+WHERE email = $2
+RETURNING id, created_at, updated_at, email, hashed_password, access_token
+`
+
+type SetUserTokenParams struct {
+	AccessToken string
+	Email       string
+}
+
+func (q *Queries) SetUserToken(ctx context.Context, arg SetUserTokenParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, setUserToken, arg.AccessToken, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.HashedPassword,
+		&i.AccessToken,
+	)
+	return i, err
 }
