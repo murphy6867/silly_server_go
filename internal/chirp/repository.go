@@ -2,7 +2,6 @@ package chirp
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/murphy6867/silly_server_go/internal/auth"
@@ -20,9 +19,9 @@ type repository struct {
 	secretKey string
 }
 
-func NewRepository(db *sql.DB, secretKey string) ChirpRepository {
+func NewRepository(queries *database.Queries, secretKey string) ChirpRepository {
 	return &repository{
-		queries:   database.New(db),
+		queries:   queries,
 		secretKey: secretKey,
 	}
 }
@@ -37,7 +36,6 @@ func (r *repository) CreateChirp(ctx context.Context, c *Chirp) (*Chirp, error) 
 		ID:        c.ID,
 		UserID:    userID,
 		Body:      c.Body,
-		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
 	})
 

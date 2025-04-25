@@ -1,14 +1,15 @@
-package handler
+package middleware
 
 import (
 	"log"
 	"net/http"
+	"sync/atomic"
 )
 
-func (cfg *APIConfig) MiddlewareMetricsInc(next http.Handler) http.Handler {
+func MiddlewareMetricsInc(next http.Handler, fsh *atomic.Int32) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Requested path:", r.URL.Path)
-		cfg.FileServerHits.Add(1)
+		fsh.Add(1)
 		next.ServeHTTP(w, r)
 	})
 }

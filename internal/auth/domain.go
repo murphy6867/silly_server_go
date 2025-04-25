@@ -2,10 +2,12 @@ package auth
 
 import (
 	"errors"
+	"net/http"
 	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
+	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
 func NewUser(email string, password string) (*SignUpUserInfo, error) {
@@ -27,19 +29,28 @@ func NewUser(email string, password string) (*SignUpUserInfo, error) {
 	}, nil
 }
 
-func NewSignIn(data SignInDTO) (*SignIn, error) {
-	var expiresIn time.Duration
-	if data.ExpiresInSecond == 0 {
-		expiresIn = time.Hour
-	} else if data.ExpiresInSecond > 3600 {
-		expiresIn = time.Hour
-	} else {
-		expiresIn = time.Duration(data.ExpiresInSecond) * time.Second
+func NewSignIn(data SignInDTO) (*SignInUserInfo, error) {
+	refToken, err := MakeRefreshToken()
+	if err != nil {
+		return nil, err
 	}
 
-	return &SignIn{
-		Email:           data.Email,
-		Password:        data.Password,
-		ExpiresInSecond: expiresIn,
+	return &SignInUserInfo{
+		Email:             data.Email,
+		Password:          data.Password,
+		AccessTokenExpAt:  time.Hour,
+		RefreshToken:      refToken,
+		RefreshTokenExpAt: time.Hour * 24 * 60,
+	}, nil
+}
+
+func GetRefreshToken(header http.Header) (*UserRefreshToken, error) {
+	refreshTK, err := utils.GetBearerToken(header)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserRefreshToken{
+		RefreshToken: refreshTK,
 	}, nil
 }

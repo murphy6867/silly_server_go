@@ -2,6 +2,8 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 
 	utils "github.com/murphy6867/silly_server_go/internal/shared"
@@ -24,7 +26,7 @@ func (h *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.svc.SignUpUserService(r.Context(), dataIn)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusUnauthorized)
 		return
 	}
 
@@ -41,36 +43,53 @@ func (h *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 	var signInInfo SignInDTO
 	if err := json.NewDecoder(r.Body).Decode(&signInInfo); err != nil {
-		http.Error(w, "invalid request payload", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	out, err := h.svc.SignInService(r.Context(), signInInfo)
 	if err != nil {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusUnauthorized)
 		return
 	}
 
-	w.Header().Set("Authorization", "Bearer "+out.AccessToken)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Authorization", "Bearer "+out.Token)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if data, err := json.Marshal(ResponseUerDTO{
-		ID:          out.ID.String(),
-		CreatedAt:   out.CreatedAt.String(),
-		UpdatedAt:   out.UpdatedAt.String(),
-		Email:       out.Email,
-		AccessToken: out.AccessToken,
-	}); err == nil {
-		w.Write(data)
-	} else {
-		http.Error(w, "something went wrong", http.StatusInternalServerError)
+
+	response := SignInResponse{
+		User: User{
+			ID:        out.User.ID,
+			CreatedAt: out.User.CreatedAt,
+			UpdatedAt: out.User.UpdatedAt,
+			Email:     out.User.Email,
+		},
+		Token:        out.Token,
+		RefreshToken: out.RefreshToken,
 	}
 
-	// utils.WriteJSON(w, http.StatusOK, ResponseUerDTO{
-	// 	ID:        out.ID.String(),
-	// 	CreatedAt: out.CreatedAt.String(),
-	// 	UpdatedAt: out.UpdatedAt.String(),
-	// 	Email:     out.Email,
-	// 	// AccessToken: out.AccessToken,
-	// })
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "something went wrong", http.StatusInternalServerError)
+	}
+}
+
+func (h *AuthHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+	out, err := h.svc.RefreshTokenService(r.Context(), r.Header)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusUnauthorized)
+		return
+	}
+	log.Println("--------> out", out)
+	log.Println("--------> out.RefreshToken", out.RefreshToken)
+	utils.WriteJSON(w, http.StatusOK, RefreshResponse{
+		Token: out.RefreshToken,
+	})
+}
+
+func (h *AuthHandler) RevokeRefreshToken(w http.ResponseWriter, r *http.Request) {
+	if err := h.svc.RevokeRefreshTokenService(r.Context(), r.Header); err != nil {
+		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusBadRequest)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

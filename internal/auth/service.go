@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"net/http"
 )
 
 type AuthService struct {
@@ -13,7 +14,7 @@ func NewAuthService(r AuthRepository) *AuthService {
 	return &AuthService{repo: r}
 }
 
-func (u *AuthService) SignUpUserService(ctx context.Context, data SignUpUserDTO) (*SignUpUserInfo, error) {
+func (s *AuthService) SignUpUserService(ctx context.Context, data SignUpUserDTO) (*SignUpUserInfo, error) {
 	if data.Email == "" {
 		return nil, errors.New("email is required")
 	}
@@ -26,14 +27,14 @@ func (u *AuthService) SignUpUserService(ctx context.Context, data SignUpUserDTO)
 		return nil, err
 	}
 
-	if err := u.repo.Register(ctx, user); err != nil {
+	if err := s.repo.Register(ctx, user); err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (u *AuthService) SignInService(ctx context.Context, data SignInDTO) (*User, error) {
+func (s *AuthService) SignInService(ctx context.Context, data SignInDTO) (*SignInResponse, error) {
 	if data.Email == "" {
 		return nil, errors.New("email is required")
 	}
@@ -47,10 +48,27 @@ func (u *AuthService) SignInService(ctx context.Context, data SignInDTO) (*User,
 		return nil, errors.New("internal server error")
 	}
 
-	user, err := u.repo.SignIn(ctx, dataSignIn)
+	user, err := s.repo.SignIn(ctx, dataSignIn)
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
+}
+
+func (s *AuthService) RefreshTokenService(ctx context.Context, header http.Header) (*UserRefreshToken, error) {
+	refreshToken, err := GetRefreshToken(header)
+	if err != nil {
+		return nil, err
+
+	}
+	return s.repo.RefreshTokenRepo(ctx, refreshToken)
+}
+
+func (s *AuthService) RevokeRefreshTokenService(ctx context.Context, header http.Header) error {
+	refreshToken, err := GetRefreshToken(header)
+	if err != nil {
+		return err
+	}
+	return s.repo.RevokeRefreshTokenRepo(ctx, refreshToken)
 }
