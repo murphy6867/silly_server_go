@@ -20,6 +20,10 @@ type ResponseCreateChirpDTO struct {
 	UserID    string `json:"user_id"`
 }
 
+type ChirpDTO struct {
+	ChirpId string `json:"chirp_id"`
+}
+
 type Chirp struct {
 	ID          uuid.UUID
 	CreatedAt   time.Time
@@ -27,6 +31,12 @@ type Chirp struct {
 	Body        string
 	UserID      uuid.UUID
 	AccessToken string
+}
+
+type ManageChirpInfo struct {
+	UserId      uuid.UUID
+	AccessToken string
+	ChirpID     uuid.UUID
 }
 
 type ResponseChirpsDTO []ResponseCreateChirpDTO

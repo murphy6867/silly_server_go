@@ -49,15 +49,31 @@ func (c *ChirpHandler) GetAllChirpsHandler(w http.ResponseWriter, r *http.Reques
 	utils.WriteJSON(w, http.StatusOK, out)
 }
 
-func (c *ChirpHandler) GetChirpsByIdHandler(w http.ResponseWriter, r *http.Request) {
-	chirpId := r.PathValue("chirpID")
+func (c *ChirpHandler) GetChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
+	chirpIDString := r.PathValue("chirpID")
 
-	out, err := c.svc.GetChirpsByIdService(r.Context(), chirpId)
+	out, err := c.svc.GetChirpsByIdService(r.Context(), chirpIDString)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.HandleError(w, err)
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, out)
+	utils.WriteJSON(w, http.StatusOK, &ResponseCreateChirpDTO{
+		ID:        out.ID.String(),
+		UserID:    out.UserID.String(),
+		CreatedAt: out.CreatedAt.String(),
+		UpdatedAt: out.UpdatedAt.String(),
+		Body:      out.Body,
+	})
+}
 
+func (c *ChirpHandler) DeleteChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
+	chirpIDString := r.PathValue("chirpID")
+
+	if err := c.svc.DeleteChirpByIdService(r.Context(), r.Header, chirpIDString); err != nil {
+		utils.HandleError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

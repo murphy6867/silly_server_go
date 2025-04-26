@@ -49,13 +49,8 @@ func main() {
 	// Chirp
 	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
-	mux.HandleFunc("/api/chirps/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			chirpHdl.GetChirpsByIdHandler(w, r)
-		} else {
-			http.NotFound(w, r)
-		}
-	})
+	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpHdl.GetChirpByIdHandler)
+	mux.HandleFunc("DELETE /api/chirps/{chirpID}", chirpHdl.DeleteChirpByIdHandler)
 
 	// Admin API routes
 	// TODO: Create internal/admin

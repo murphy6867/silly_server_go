@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/murphy6867/silly_server_go/internal/auth"
 	"github.com/murphy6867/silly_server_go/internal/database"
 	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
@@ -60,12 +61,35 @@ func GetChirps(ctx context.Context, data []database.Chirp) *ResponseChirpsDTO {
 	return &chirps
 }
 
-func GetChirpById(ctx context.Context, data database.Chirp) *ResponseCreateChirpDTO {
-	return &ResponseCreateChirpDTO{
-		ID:        data.ID.String(),
-		CreatedAt: data.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: data.UpdatedAt.Format(time.RFC3339),
-		UserID:    data.UserID.String(),
-		Body:      data.Body,
+func MappingChirp(chirpID string) (*ManageChirpInfo, error) {
+	parsedChirpID, err := uuid.Parse(chirpID)
+	if err != nil {
+		return nil, utils.NewDomainError(400, "chirp id notfound")
 	}
+	return &ManageChirpInfo{
+		ChirpID: parsedChirpID,
+	}, nil
+}
+
+func MappingChirpAndAuthorization(header http.Header, secretKey string, chirpId string) (*ManageChirpInfo, error) {
+	token, err := utils.GetBearerToken(header)
+	if err != nil {
+		return nil, utils.NewDomainError(401, "token not found")
+	}
+
+	userID, err := auth.ValidateJWT(token, secretKey)
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
+
+	chirpID, err := uuid.Parse(chirpId)
+	if err != nil {
+		return nil, errors.New("invalid chirp id")
+	}
+
+	return &ManageChirpInfo{
+		UserId:      userID,
+		AccessToken: token,
+		ChirpID:     chirpID,
+	}, nil
 }

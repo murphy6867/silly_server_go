@@ -6,12 +6,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/murphy6867/silly_server_go/internal/auth"
 	"github.com/murphy6867/silly_server_go/internal/database"
+	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
 type ChirpRepository interface {
 	CreateChirp(ctx context.Context, c *Chirp) (*Chirp, error)
 	GetAllChirps(ctx context.Context) ([]database.Chirp, error)
-	GetChirpsById(ctx context.Context, userId uuid.UUID) (database.Chirp, error)
+	GetChirpById(ctx context.Context, userId uuid.UUID) (*Chirp, error)
+	DeleteChirpById(ctx context.Context, data *ManageChirpInfo) error
+	GetSecretKeyString() string
 }
 
 type repository struct {
@@ -56,10 +59,37 @@ func (r *repository) GetAllChirps(ctx context.Context) ([]database.Chirp, error)
 	return dbChirps, nil
 }
 
-func (r *repository) GetChirpsById(ctx context.Context, chirpId uuid.UUID) (database.Chirp, error) {
+func (r *repository) GetChirpById(ctx context.Context, chirpId uuid.UUID) (*Chirp, error) {
 	dbChirps, err := r.queries.GetChirpById(ctx, chirpId)
 	if err != nil {
-		return dbChirps, err
+		return nil, utils.NewDomainError(404, "not found")
 	}
-	return dbChirps, nil
+	return &Chirp{
+		ID:        dbChirps.ID,
+		UserID:    dbChirps.UserID,
+		Body:      dbChirps.Body,
+		CreatedAt: dbChirps.CreatedAt,
+		UpdatedAt: dbChirps.UpdatedAt,
+	}, nil
+}
+
+func (r *repository) DeleteChirpById(ctx context.Context, data *ManageChirpInfo) error {
+	dbChirp, err := r.queries.GetChirpById(ctx, data.ChirpID)
+	if err != nil {
+		return utils.NewDomainError(404, "chirp not found")
+	}
+
+	if dbChirp.UserID != data.UserId {
+		return utils.NewDomainError(403, "forbidden permission error")
+	}
+
+	err = r.queries.DeleteChirpById(ctx, dbChirp.ID)
+	if err != nil {
+		return utils.NewDomainError(500, "internal Server error")
+	}
+	return nil
+}
+
+func (r *repository) GetSecretKeyString() string {
+	return r.secretKey
 }

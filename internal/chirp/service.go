@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 type ChirpService struct {
@@ -45,22 +43,31 @@ func (svc *ChirpService) GetAllChirpsService(ctx context.Context) (*ResponseChir
 	return chirps, nil
 }
 
-func (svc *ChirpService) GetChirpsByIdService(ctx context.Context, chirpId string) (*ResponseCreateChirpDTO, error) {
-	if chirpId == "" {
+func (svc *ChirpService) GetChirpsByIdService(ctx context.Context, chirpID string) (*Chirp, error) {
+	if chirpID == "" {
 		return nil, errors.New("parameter value is required")
 	}
-	parsedUserId, err := uuid.Parse(chirpId)
+
+	chirps, err := MappingChirp(chirpID)
 	if err != nil {
 		return nil, err
 	}
 
-	dbChirps, err := svc.repo.GetChirpsById(ctx, parsedUserId)
+	dbChirps, err := svc.repo.GetChirpById(ctx, chirps.ChirpID)
 	if err != nil {
 		return nil, err
 	}
 
-	chirps := GetChirpById(ctx, dbChirps)
+	return dbChirps, nil
+}
 
-	return chirps, nil
+func (svc *ChirpService) DeleteChirpByIdService(ctx context.Context, header http.Header, chirpId string) error {
+	secTK := svc.repo.GetSecretKeyString()
 
+	body, err := MappingChirpAndAuthorization(header, secTK, chirpId)
+	if err != nil {
+		return err
+	}
+
+	return svc.repo.DeleteChirpById(ctx, body)
 }

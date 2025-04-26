@@ -8,6 +8,35 @@ import (
 	"strings"
 )
 
+type DomainError struct {
+	Code    int
+	Message string
+}
+
+func (e *DomainError) Error() string {
+	return e.Message
+}
+
+func NewDomainError(code int, message string) *DomainError {
+	return &DomainError{
+		Code:    code,
+		Message: message,
+	}
+}
+
+func HandleError(w http.ResponseWriter, err error) {
+	if domainErr, ok := err.(*DomainError); ok {
+		WriteJSON(w, domainErr.Code, map[string]string{
+			"error": domainErr.Message,
+		})
+		return
+	}
+
+	WriteJSON(w, http.StatusInternalServerError, map[string]string{
+		"error": "Internal Server Error",
+	})
+}
+
 func WriteJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
