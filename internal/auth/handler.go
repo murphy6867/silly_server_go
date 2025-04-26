@@ -3,7 +3,6 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	utils "github.com/murphy6867/silly_server_go/internal/shared"
@@ -79,8 +78,6 @@ func (h *AuthHandler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusUnauthorized)
 		return
 	}
-	log.Println("--------> out", out)
-	log.Println("--------> out.RefreshToken", out.RefreshToken)
 	utils.WriteJSON(w, http.StatusOK, RefreshResponse{
 		Token: out.RefreshToken,
 	})
@@ -92,4 +89,26 @@ func (h *AuthHandler) RevokeRefreshToken(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *AuthHandler) UpdateEmailAndPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	var body EditEmailAndPasswordDTO
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, fmt.Sprintf("no body request: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	out, err := h.svc.UpdateEmailAndPasswordService(r.Context(), r.Header, body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("unauthorized: %v", err), http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Authorization", "Bearer "+out.Token)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	utils.WriteJSON(w, http.StatusOK, User{
+		ID:    out.User.ID,
+		Email: out.User.Email,
+	})
 }

@@ -72,3 +72,13 @@ func (s *AuthService) RevokeRefreshTokenService(ctx context.Context, header http
 	}
 	return s.repo.RevokeRefreshTokenRepo(ctx, refreshToken)
 }
+
+func (s *AuthService) UpdateEmailAndPasswordService(ctx context.Context, header http.Header, body EditEmailAndPasswordDTO) (*SignInResponse, error) {
+	mappingUser := EditEmailAndPassword(body)
+
+	user, err := s.repo.UpdateEmailAndPasswordRepo(ctx, header, mappingUser)
+	if err != nil {
+		return nil, err
+	}
+	return user, err
+}

@@ -43,6 +43,7 @@ func main() {
 	mux.HandleFunc("POST /api/login", authHld.SignInHandler)
 	mux.HandleFunc("POST /api/signup", authHld.SignUpHandler)
 	mux.HandleFunc("POST /api/users", authHld.SignUpHandler)
+	mux.HandleFunc("PUT /api/users", authHld.UpdateEmailAndPasswordHandler)
 	mux.HandleFunc("POST /api/refresh", authHld.RefreshTokenHandler)
 	mux.HandleFunc("POST /api/revoke", authHld.RevokeRefreshToken)
 	// Chirp

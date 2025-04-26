@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/murphy6867/silly_server_go/internal/database"
+	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
 type AuthRepository interface {
@@ -14,6 +16,7 @@ type AuthRepository interface {
 	SignIn(ctx context.Context, data *SignInUserInfo) (*SignInResponse, error)
 	RefreshTokenRepo(ctx context.Context, refTK *UserRefreshToken) (*UserRefreshToken, error)
 	RevokeRefreshTokenRepo(ctx context.Context, refTK *UserRefreshToken) error
+	UpdateEmailAndPasswordRepo(ctx context.Context, header http.Header, body EditEmailAndPassword) (*SignInResponse, error)
 	GetSecretKeyString() string
 }
 
@@ -103,6 +106,43 @@ func (r *repository) RevokeRefreshTokenRepo(ctx context.Context, refTK *UserRefr
 		return err
 	}
 	return nil
+}
+
+func (r *repository) UpdateEmailAndPasswordRepo(ctx context.Context, header http.Header, body EditEmailAndPassword) (*SignInResponse, error) {
+	accessToken, err := utils.GetBearerToken(header)
+	if err != nil {
+		return nil, err
+	}
+
+	userId, err := ValidateJWT(accessToken, r.secretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	newPass, err := HashPassword(body.NewPassword)
+	if err != nil {
+		return nil, err
+	}
+
+	newTime := time.Now().UTC()
+
+	if err := r.queries.UpdateEmailAndPassword(ctx, database.UpdateEmailAndPasswordParams{
+		ID:             userId,
+		Email:          body.NewEmail,
+		HashedPassword: newPass,
+		UpdatedAt:      newTime,
+	}); err != nil {
+		return nil, err
+	}
+
+	return &SignInResponse{
+		User: User{
+			ID:        userId,
+			Email:     body.NewEmail,
+			CreatedAt: newTime,
+		},
+		RefreshToken: accessToken,
+	}, nil
 }
 
 func (r *repository) GetSecretKeyString() string {

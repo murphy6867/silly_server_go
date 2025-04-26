@@ -54,3 +54,10 @@ func GetRefreshToken(header http.Header) (*UserRefreshToken, error) {
 		RefreshToken: refreshTK,
 	}, nil
 }
+
+func MappingEditEmailAndPassword(body EditEmailAndPasswordDTO) *EditEmailAndPassword {
+	return &EditEmailAndPassword{
+		NewEmail:    body.NewEmail,
+		NewPassword: body.NewPassword,
+	}
+}

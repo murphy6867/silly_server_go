@@ -16,6 +16,11 @@ type SignInDTO struct {
 	Password string `json:"password"`
 }
 
+type EditEmailAndPasswordDTO struct {
+	NewEmail    string `json:"email"`
+	NewPassword string `json:"password"`
+}
+
 type User struct {
 	ID             uuid.UUID `json:"id,omitempty"`
 	Email          string    `json:"email,omitempty"`
@@ -25,9 +30,9 @@ type User struct {
 }
 
 type SignInResponse struct {
-	User         User   `json:"user"`
-	Token        string `json:"token"`
-	RefreshToken string `json:"refresh_token"`
+	User         User   `json:"user,omitempty"`
+	Token        string `json:"token,omitempty"`
+	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
 type ResponseUerDTO struct {
@@ -69,4 +74,13 @@ type SignUpUserInfo struct {
 
 type UserRefreshToken struct {
 	RefreshToken string
+}
+
+type UserAccessToken struct {
+	AccessToken string
+}
+
+type EditEmailAndPassword struct {
+	NewEmail    string
+	NewPassword string
 }
