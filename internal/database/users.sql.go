@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,7 +19,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, created_at, updated_at, email, hashed_password
+RETURNING id, created_at, updated_at, email, hashed_password, is_chirpy_red
 `
 
 type CreateUserParams struct {
@@ -44,13 +45,14 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UpdatedAt,
 		&i.Email,
 		&i.HashedPassword,
+		&i.IsChirpyRed,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
-    id, created_at, updated_at, email, hashed_password
+    id, created_at, updated_at, email, hashed_password, is_chirpy_red
 FROM 
     users
 WHERE
@@ -66,6 +68,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.UpdatedAt,
 		&i.Email,
 		&i.HashedPassword,
+		&i.IsChirpyRed,
 	)
 	return i, err
 }
@@ -99,5 +102,21 @@ func (q *Queries) UpdateEmailAndPassword(ctx context.Context, arg UpdateEmailAnd
 		arg.HashedPassword,
 		arg.UpdatedAt,
 	)
+	return err
+}
+
+const updateIsChirpsRedStatus = `-- name: UpdateIsChirpsRedStatus :exec
+UPDATE users
+SET is_chirpy_red = $2
+WHERE id = $1
+`
+
+type UpdateIsChirpsRedStatusParams struct {
+	ID          uuid.UUID
+	IsChirpyRed sql.NullBool
+}
+
+func (q *Queries) UpdateIsChirpsRedStatus(ctx context.Context, arg UpdateIsChirpsRedStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateIsChirpsRedStatus, arg.ID, arg.IsChirpyRed)
 	return err
 }

@@ -27,12 +27,13 @@ type User struct {
 	CreatedAt      time.Time `json:"created_at,omitempty"`
 	UpdatedAt      time.Time `json:"updated_at,omitempty"`
 	HashedPassword string    `json:"hashed_password,omitempty"`
+	IsChirpyRed    bool      `json:"is_chirpy_red"`
 }
-
 type SignInResponse struct {
 	User         User   `json:"user,omitempty"`
 	Token        string `json:"token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
+	IsChirpyRed  bool   `json:"is_chirpy_red"`
 }
 
 type ResponseUerDTO struct {
@@ -42,6 +43,7 @@ type ResponseUerDTO struct {
 	Email        string `json:"email"`
 	AccessToken  string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
+	IsChirpyRed  bool   `json:"is_chirpy_red"`
 }
 
 type RefreshResponse struct {
@@ -65,11 +67,12 @@ type ResponseUserSignIn struct {
 }
 
 type SignUpUserInfo struct {
-	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Email     string
-	Password  string
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Email       string
+	Password    string
+	IsChirpyRed bool
 }
 
 type UserRefreshToken struct {

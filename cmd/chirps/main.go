@@ -12,6 +12,7 @@ import (
 	"github.com/murphy6867/silly_server_go/internal/infra"
 	"github.com/murphy6867/silly_server_go/internal/infra/config"
 	"github.com/murphy6867/silly_server_go/internal/middleware"
+	"github.com/murphy6867/silly_server_go/internal/webhook"
 )
 
 func main() {
@@ -29,6 +30,14 @@ func main() {
 	chirpHdl := chirp.NewChirpHandler(chirpSvc)
 
 	// Compose User module
+	// userRepo := user.NewRepository(apiCfg.DB, apiCfg.JWTSecret)
+	// userSvc := user.NewUserService(userRepo)
+	// userHdl := user.NewUserHandler(userSvc)
+
+	// Compose Polka Webhook
+	webHookRepo := webhook.NewRepository(apiCfg.DB, apiCfg.JWTSecret, apiCfg.PolkaKey)
+	webHookService := webhook.NewWebhookService(webHookRepo)
+	webHook := webhook.NewWebhookHandler(webHookService)
 
 	mux := http.NewServeMux()
 
@@ -51,6 +60,10 @@ func main() {
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpHdl.GetChirpByIdHandler)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", chirpHdl.DeleteChirpByIdHandler)
+	// User
+	// TODO: Implement user actions
+	// TODO: Separate webhook endpoint
+	mux.HandleFunc("POST /api/polka/webhooks", webHook.UpdateSubscriptionHandler)
 
 	// Admin API routes
 	// TODO: Create internal/admin

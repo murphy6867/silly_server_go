@@ -14,9 +14,10 @@ import (
 type APIConfig struct {
 	FileServerHits atomic.Int32
 	DB             *database.Queries
-	JWTSecret      string
 	TokenExpireIn  time.Duration
 	CloseDB        *sql.DB
+	JWTSecret      string
+	PolkaKey       string
 }
 
 func Load() *APIConfig {
@@ -38,6 +39,11 @@ func Load() *APIConfig {
 		log.Fatal("TOKEN_EXPIRE environment variable is not set")
 	}
 
+	polkaKey := os.Getenv("POLKA_KEY")
+	if polkaKey == "" {
+		log.Fatal("POLKA_KEY environment variable is not set")
+	}
+
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -53,8 +59,9 @@ func Load() *APIConfig {
 	}
 	return &APIConfig{
 		DB:            database.New(db),
-		JWTSecret:     secret,
 		TokenExpireIn: parsedExpire,
 		CloseDB:       db,
+		JWTSecret:     secret,
+		PolkaKey:      polkaKey,
 	}
 }

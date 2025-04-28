@@ -30,10 +30,11 @@ func (h *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	out := ResponseUerDTO{
-		ID:        user.ID.String(),
-		CreatedAt: user.CreatedAt.String(),
-		UpdatedAt: user.UpdatedAt.String(),
-		Email:     user.Email,
+		ID:          user.ID.String(),
+		CreatedAt:   user.CreatedAt.String(),
+		UpdatedAt:   user.UpdatedAt.String(),
+		Email:       user.Email,
+		IsChirpyRed: user.IsChirpyRed,
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, out)
@@ -58,13 +59,15 @@ func (h *AuthHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 
 	response := SignInResponse{
 		User: User{
-			ID:        out.User.ID,
-			CreatedAt: out.User.CreatedAt,
-			UpdatedAt: out.User.UpdatedAt,
-			Email:     out.User.Email,
+			ID:          out.User.ID,
+			CreatedAt:   out.User.CreatedAt,
+			UpdatedAt:   out.User.UpdatedAt,
+			Email:       out.User.Email,
+			IsChirpyRed: out.User.IsChirpyRed,
 		},
 		Token:        out.Token,
 		RefreshToken: out.RefreshToken,
+		IsChirpyRed:  out.User.IsChirpyRed,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

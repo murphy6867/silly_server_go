@@ -49,6 +49,8 @@ func (r *repository) SignIn(ctx context.Context, data *SignInUserInfo) (*SignInR
 		return nil, err
 	}
 
+	isChirpyRed := user.IsChirpyRed.Valid && user.IsChirpyRed.Bool
+
 	if err := CheckPasswordHash(data.Password, user.HashedPassword); err != nil {
 		fmt.Println(err)
 		return nil, errors.New("password incorrect")
@@ -70,13 +72,15 @@ func (r *repository) SignIn(ctx context.Context, data *SignInUserInfo) (*SignInR
 
 	return &SignInResponse{
 		User: User{
-			ID:        user.ID,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			ID:          user.ID,
+			Email:       user.Email,
+			CreatedAt:   user.CreatedAt,
+			UpdatedAt:   user.UpdatedAt,
+			IsChirpyRed: isChirpyRed,
 		},
 		Token:        accessToken,
 		RefreshToken: data.RefreshToken,
+		IsChirpyRed:  isChirpyRed,
 	}, nil
 }
 
