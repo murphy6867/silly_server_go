@@ -56,9 +56,10 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", authHld.RefreshTokenHandler)
 	mux.HandleFunc("POST /api/revoke", authHld.RevokeRefreshToken)
 	// Chirp
-	mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
+	// mux.HandleFunc("GET /api/chirps", chirpHdl.GetAllChirpsHandler)
+	// mux.HandleFunc("GET /api/chirps/{chirpID}", chirpHdl.GetChirpByIdHandler)
+	mux.HandleFunc("GET /api/chirps", chirpHdl.GetChirpsHandler)
 	mux.HandleFunc("POST /api/chirps", chirpHdl.CreateChirpHandler)
-	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpHdl.GetChirpByIdHandler)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", chirpHdl.DeleteChirpByIdHandler)
 	// User
 	// TODO: Implement user actions

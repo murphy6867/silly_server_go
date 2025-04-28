@@ -68,6 +68,7 @@ func (h *AuthHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 		Token:        out.Token,
 		RefreshToken: out.RefreshToken,
 		IsChirpyRed:  out.User.IsChirpyRed,
+		Email:        out.User.Email,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

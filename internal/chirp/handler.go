@@ -24,47 +24,48 @@ func (c *ChirpHandler) CreateChirpHandler(w http.ResponseWriter, r *http.Request
 
 	chirp, err := c.svc.CreateChirpService(r, dataIn)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	out := ResponseCreateChirpDTO{
-		ID:        chirp.ID.String(),
-		CreatedAt: chirp.CreatedAt.String(),
-		UpdatedAt: chirp.UpdatedAt.String(),
-		Body:      chirp.Body,
-		UserID:    chirp.UserID.String(),
-	}
-
-	utils.WriteJSON(w, http.StatusCreated, out)
-}
-
-func (c *ChirpHandler) GetAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	out, err := c.svc.GetAllChirpsService(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusOK, out)
-}
-
-func (c *ChirpHandler) GetChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
-	chirpIDString := r.PathValue("chirpID")
-
-	out, err := c.svc.GetChirpsByIdService(r.Context(), chirpIDString)
-	if err != nil {
 		utils.HandleError(w, err)
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, &ResponseCreateChirpDTO{
-		ID:        out.ID.String(),
-		UserID:    out.UserID.String(),
-		CreatedAt: out.CreatedAt.String(),
-		UpdatedAt: out.UpdatedAt.String(),
-		Body:      out.Body,
-	})
+	utils.WriteJSON(w, http.StatusCreated, mapDatabaseChirp(*chirp))
+}
+
+func (c *ChirpHandler) GetChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	userID := q.Get("author_id")
+	chirpID := q.Get("id")
+	sort := q.Get("sort")
+	sortPtr := &sort
+
+	switch {
+	case chirpID != "" && userID == "":
+		chirp, err := c.svc.GetChirpsByIdService(r.Context(), &chirpID)
+		if err != nil {
+			utils.HandleError(w, err)
+			return
+		}
+		utils.WriteJSON(w, http.StatusOK, mapDatabaseChirp(*chirp))
+
+	case userID != "" && chirpID == "":
+		userDto, err := c.svc.GetChirpsByUserIdService(r.Context(), &userID, sortPtr)
+		if err != nil {
+			utils.HandleError(w, err)
+			return
+		}
+		utils.WriteJSON(w, http.StatusOK, mapDatabaseChirps(*userDto))
+
+	case userID == "" && chirpID == "":
+		domainChirps, err := c.svc.GetAllChirpsService(r.Context(), sortPtr)
+		if err != nil {
+			utils.HandleError(w, err)
+			return
+		}
+		utils.WriteJSON(w, http.StatusOK, mapDatabaseChirps(*domainChirps))
+
+	default:
+		http.Error(w, "invalid query parameters", http.StatusBadRequest)
+	}
 }
 
 func (c *ChirpHandler) DeleteChirpByIdHandler(w http.ResponseWriter, r *http.Request) {

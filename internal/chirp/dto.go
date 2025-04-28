@@ -34,9 +34,10 @@ type Chirp struct {
 }
 
 type ManageChirpInfo struct {
-	UserId      uuid.UUID
+	UserID      uuid.UUID
 	AccessToken string
 	ChirpID     uuid.UUID
+	SortString  string
 }
 
 type ResponseChirpsDTO []ResponseCreateChirpDTO

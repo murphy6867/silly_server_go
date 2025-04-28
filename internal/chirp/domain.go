@@ -1,14 +1,13 @@
 package chirp
 
 import (
-	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/murphy6867/silly_server_go/internal/auth"
-	"github.com/murphy6867/silly_server_go/internal/database"
 	utils "github.com/murphy6867/silly_server_go/internal/shared"
 )
 
@@ -24,15 +23,18 @@ var profaneWords = map[string]bool{
 func NewChirp(r *http.Request, data CreateChirpDTO) (*Chirp, error) {
 	token, err := utils.GetBearerToken(r.Header)
 	if err != nil {
-		return nil, errors.New("invalid token")
+		return nil, utils.NewDomainError(401, fmt.Sprintf("unauthorized: %s", err))
+
 	}
 
 	if len(data.Body) > MaxChirpLength {
-		return nil, errors.New("chirp is too long")
+		return nil, utils.NewDomainError(400, "chirp is too long")
+
 	}
 
 	if len(data.Body) == 0 {
-		return nil, errors.New("chirp is too short")
+		return nil, utils.NewDomainError(400, "chirp is too short")
+
 	}
 
 	cleaned := utils.FilterWord(profaneWords, data.Body, ReplaceString)
@@ -46,29 +48,26 @@ func NewChirp(r *http.Request, data CreateChirpDTO) (*Chirp, error) {
 	}, nil
 }
 
-func GetChirps(ctx context.Context, data []database.Chirp) *ResponseChirpsDTO {
-	chirps := make(ResponseChirpsDTO, len(data))
-	for i, ch := range data {
-		chirps[i] = ResponseCreateChirpDTO{
-			ID:        ch.ID.String(),
-			UserID:    ch.UserID.String(),
-			Body:      ch.Body,
-			CreatedAt: ch.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: ch.UpdatedAt.Format(time.RFC3339),
-		}
+func MappingChirpInfo(stringID string, isUserID bool, sortedString *string) (*ManageChirpInfo, error) {
+	info := &ManageChirpInfo{}
+
+	info.SortString = *sortedString
+	if stringID == "" {
+		return info, nil
 	}
 
-	return &chirps
-}
-
-func MappingChirp(chirpID string) (*ManageChirpInfo, error) {
-	parsedChirpID, err := uuid.Parse(chirpID)
+	parsedID, err := uuid.Parse(stringID)
 	if err != nil {
-		return nil, utils.NewDomainError(400, "chirp id notfound")
+		return nil, utils.NewDomainError(400, fmt.Sprintf("bad request: %s", err))
 	}
-	return &ManageChirpInfo{
-		ChirpID: parsedChirpID,
-	}, nil
+
+	if isUserID {
+		info.UserID = parsedID
+	} else {
+		info.ChirpID = parsedID
+	}
+
+	return info, nil
 }
 
 func MappingChirpAndAuthorization(header http.Header, secretKey string, chirpId string) (*ManageChirpInfo, error) {
@@ -88,7 +87,7 @@ func MappingChirpAndAuthorization(header http.Header, secretKey string, chirpId 
 	}
 
 	return &ManageChirpInfo{
-		UserId:      userID,
+		UserID:      userID,
 		AccessToken: token,
 		ChirpID:     chirpID,
 	}, nil

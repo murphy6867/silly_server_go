@@ -2,7 +2,6 @@ package webhook
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	utils "github.com/murphy6867/silly_server_go/internal/shared"
@@ -24,8 +23,6 @@ func (h *WebhookHandler) UpdateSubscriptionHandler(w http.ResponseWriter, r *htt
 	}
 
 	if err := h.svc.SubscriptionService(r.Context(), r.Header, &req); err != nil {
-		log.Println("--------> err", err)
-
 		utils.HandleError(w, err)
 		return
 	}
