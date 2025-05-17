@@ -1,0 +1,135 @@
+openapi: 3.0.0
+info:
+  title: Silly Server API
+  version: 1.0.0
+  description: API for Silly Server with chirping and authentication functionality.
+
+servers:
+  - url: http://localhost:8080
+    description: Local server
+
+paths:
+  /api/healthz:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Server is healthy
+
+  /api/signin:
+    post:
+      summary: Sign in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Authenticated
+
+  /api/signup:
+    post:
+      summary: Sign up
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "201":
+          description: User created
+
+  /api/users:
+    post:
+      summary: Sign up (alias)
+      deprecated: true
+      responses:
+        "201":
+          description: Same as /signup
+    put:
+      summary: Update user credentials
+      responses:
+        "200":
+          description: Email/password updated
+
+  /api/refresh:
+    post:
+      summary: Refresh token
+      responses:
+        "200":
+          description: Token refreshed
+
+  /api/revoke:
+    post:
+      summary: Revoke refresh token
+      responses:
+        "200":
+          description: Token revoked
+
+  /api/chirps:
+    get:
+      summary: Get all chirps
+      responses:
+        "200":
+          description: List of chirps
+    post:
+      summary: Create a chirp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        "201":
+          description: Chirp created
+
+  /api/chirps/{chirpID}:
+    delete:
+      summary: Delete chirp by ID
+      parameters:
+        - in: path
+          name: chirpID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Chirp deleted
+
+  /api/polka/webhooks:
+    post:
+      summary: Polka webhook endpoint
+      responses:
+        "200":
+          description: Webhook processed
+
+  /admin/metrics:
+    get:
+      summary: Admin metrics
+      responses:
+        "200":
+          description: Metrics report
+
+  /admin/reset:
+    post:
+      summary: Admin reset
+      responses:
+        "200":
+          description: Server state reset
